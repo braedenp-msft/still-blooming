@@ -21,17 +21,12 @@
       --ink: #5B4636;
       --font-display: 'Cormorant Garamond', 'Georgia', serif;
       --font-body: 'Nunito Sans', 'Helvetica Neue', sans-serif;
+      --bg-r: 255; --bg-g: 248; --bg-b: 239;
     }
-
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-    html {
-      scroll-behavior: smooth;
-      -webkit-text-size-adjust: 100%;
-    }
-
+    html { -webkit-text-size-adjust: 100%; }
     body {
-      background: var(--ivory);
+      background: rgb(var(--bg-r), var(--bg-g), var(--bg-b));
       color: var(--ink);
       font-family: var(--font-body);
       font-size: 19px;
@@ -39,203 +34,232 @@
       line-height: 1.7;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
+      transition: background-color 0.1s linear;
     }
-
-    /* Subtle paper grain overlay */
-    body::before {
+    /* Paper grain */
+    body::after {
       content: '';
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 9999;
-      opacity: 0.025;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 9999;
+      opacity: 0.02;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
       background-size: 256px 256px;
     }
 
-    .garden {
+    /* ═══ CANVAS & VINE LAYERS ═══ */
+    #petals-canvas {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 1;
+      width: 100%; height: 100%;
+    }
+    .vine-layer {
+      position: absolute; top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 100%;
+      pointer-events: none; z-index: 2;
+      overflow: visible;
+    }
+    #vine-svg { width: 100%; height: 100%; overflow: visible; }
+    #vine-main {
+      fill: none;
+      stroke: var(--leaf);
+      stroke-width: 2.8;
+      stroke-linecap: round;
+      opacity: 0.55;
+    }
+    .vine-leaf-d {
+      fill: var(--sage);
+      transform-origin: center;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    /* ═══ PARALLAX FLOATERS ═══ */
+    .parallax-el {
+      position: absolute;
+      pointer-events: none;
+      z-index: 1;
+      will-change: transform;
+      opacity: 0;
+      transition: opacity 1.5s ease;
+    }
+    .parallax-el.visible { opacity: 1; }
+
+    /* ═══ LAYOUT ═══ */
+    .garden-wrap {
+      position: relative;
       max-width: 500px;
       margin: 0 auto;
       padding: 0 28px;
-      position: relative;
     }
 
-    /* ============ SECTIONS ============ */
     .garden-section {
-      min-height: 90svh;
+      min-height: 92svh;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       text-align: center;
-      padding: 60px 0;
+      padding: 70px 0;
       position: relative;
+      z-index: 3;
     }
 
-    /* ============ REVEAL ANIMATION ============ */
+    /* ═══ REVEALS ═══ */
     .reveal {
       opacity: 0;
-      transform: translateY(28px);
-      transition: opacity 650ms cubic-bezier(0.22, 1, 0.36, 1),
-                  transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+      transform: translateY(32px);
+      transition: opacity 800ms cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 800ms cubic-bezier(0.22, 1, 0.36, 1);
       will-change: opacity, transform;
     }
     .in-view .reveal { opacity: 1; transform: translateY(0); }
-    .in-view .reveal.d1 { transition-delay: 150ms; }
-    .in-view .reveal.d2 { transition-delay: 300ms; }
-    .in-view .reveal.d3 { transition-delay: 450ms; }
-    .in-view .reveal.d4 { transition-delay: 600ms; }
-    .in-view .reveal.d5 { transition-delay: 750ms; }
-    .in-view .reveal.d6 { transition-delay: 900ms; }
-    .in-view .reveal.d7 { transition-delay: 1050ms; }
-    .in-view .reveal.d8 { transition-delay: 1200ms; }
+    .in-view .reveal.d1 { transition-delay: 200ms; }
+    .in-view .reveal.d2 { transition-delay: 400ms; }
+    .in-view .reveal.d3 { transition-delay: 600ms; }
+    .in-view .reveal.d4 { transition-delay: 800ms; }
+    .in-view .reveal.d5 { transition-delay: 1000ms; }
+    .in-view .reveal.d6 { transition-delay: 1200ms; }
+    .in-view .reveal.d7 { transition-delay: 1400ms; }
 
-    /* ============ TYPOGRAPHY ============ */
+    /* ═══ TYPOGRAPHY ═══ */
     .hero-title {
       font-family: var(--font-display);
-      font-size: clamp(42px, 11vw, 52px);
+      font-size: clamp(44px, 12vw, 56px);
       font-weight: 300;
-      letter-spacing: 0.02em;
-      line-height: 1.15;
+      letter-spacing: 0.03em;
+      line-height: 1.1;
       color: var(--ink);
-      margin-bottom: 24px;
+      margin-bottom: 28px;
     }
-
     .section-title {
       font-family: var(--font-display);
       font-size: clamp(26px, 7vw, 34px);
       font-weight: 400;
       font-style: italic;
       line-height: 1.35;
-      color: var(--ink);
       margin-bottom: 20px;
     }
-
     .body-copy {
       font-size: clamp(17px, 4.5vw, 20px);
-      line-height: 1.75;
+      line-height: 1.8;
       max-width: 340px;
       margin: 0 auto;
     }
-
-    .body-copy p {
-      margin-bottom: 4px;
-    }
-
+    .body-copy p { margin-bottom: 4px; }
     .subtitle {
       font-family: var(--font-display);
       font-size: clamp(20px, 5.5vw, 26px);
       font-weight: 400;
       line-height: 1.5;
-      color: var(--ink);
       opacity: 0.85;
     }
 
-    /* ============ HERO ============ */
+    /* ═══ HERO ═══ */
     .hero {
       min-height: 100svh;
-      padding-top: calc(env(safe-area-inset-top, 0px) + 40px);
+      padding-top: calc(env(safe-area-inset-top, 0px) + 48px);
     }
+    .hero .subtitle { margin-bottom: 44px; }
+    .hero .body-copy { margin-bottom: 60px; opacity: 0.75; }
 
-    .hero .subtitle {
-      margin-bottom: 40px;
-    }
-
-    .hero .body-copy {
-      margin-bottom: 60px;
-      opacity: 0.8;
-    }
-
-    .sprout-wrap {
-      margin-top: auto;
-      padding-bottom: 20px;
-    }
-
-    .sprout-svg {
-      width: 40px;
-      height: 80px;
-    }
-
+    .sprout-wrap { margin-top: auto; padding-bottom: 16px; }
+    .sprout-svg { width: 44px; height: 90px; }
     .sprout-stem {
-      stroke-dasharray: 60;
-      stroke-dashoffset: 60;
-      transition: stroke-dashoffset 1200ms cubic-bezier(0.22, 1, 0.36, 1) 800ms;
+      stroke-dasharray: 70;
+      stroke-dashoffset: 70;
+      transition: stroke-dashoffset 1400ms cubic-bezier(0.22, 1, 0.36, 1) 900ms;
     }
     .in-view .sprout-stem { stroke-dashoffset: 0; }
-
     .sprout-leaf {
       transform-origin: center bottom;
-      transform: scale(0) rotate(-20deg);
-      transition: transform 700ms cubic-bezier(0.34, 1.56, 0.64, 1) 1600ms;
+      transform: scale(0) rotate(-25deg);
+      transition: transform 800ms cubic-bezier(0.34, 1.56, 0.64, 1) 1800ms;
     }
     .in-view .sprout-leaf { transform: scale(1) rotate(0deg); }
     .sprout-leaf-r {
       transform-origin: center bottom;
-      transform: scale(0) rotate(20deg);
-      transition: transform 700ms cubic-bezier(0.34, 1.56, 0.64, 1) 1800ms;
+      transform: scale(0) rotate(25deg);
+      transition: transform 800ms cubic-bezier(0.34, 1.56, 0.64, 1) 2000ms;
     }
     .in-view .sprout-leaf-r { transform: scale(1) rotate(0deg); }
 
-    /* Scroll cue */
     .scroll-cue {
-      margin-top: 16px;
-      opacity: 0.5;
-      animation: bounce-cue 2s ease-in-out infinite 2.5s;
-      transition: opacity 600ms ease;
-      font-size: 14px;
-      letter-spacing: 0.15em;
+      margin-top: 20px;
+      opacity: 0.45;
+      animation: bounce-cue 2.2s ease-in-out infinite 2.8s;
+      transition: opacity 800ms ease;
+      font-size: 13px;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
       font-weight: 400;
       color: var(--sage);
     }
     .scroll-cue.hidden { opacity: 0; pointer-events: none; }
-    .scroll-cue svg { width: 20px; height: 20px; display: block; margin: 6px auto 0; }
-
+    .scroll-cue svg { width: 18px; height: 18px; display: block; margin: 8px auto 0; }
     @keyframes bounce-cue {
       0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(6px); }
+      50% { transform: translateY(7px); }
     }
 
-    /* ============ PHOTO CARD ============ */
+    /* ═══ PHOTO CARD ═══ */
     .photo-card {
-      border-radius: 20px;
+      border-radius: 22px;
       overflow: hidden;
-      box-shadow: 0 8px 32px rgba(91,70,54,0.12), 0 2px 8px rgba(91,70,54,0.06);
-      border: 4px solid rgba(255,248,239,0.85);
+      box-shadow: 0 10px 40px rgba(91,70,54,0.14), 0 2px 10px rgba(91,70,54,0.07);
+      border: 5px solid rgba(255,248,239,0.9);
       max-width: 280px;
       width: 85%;
       margin: 0 auto 28px;
       position: relative;
       background: linear-gradient(135deg, var(--peach), var(--blush));
     }
-    .photo-card.rot-1 { transform: rotate(-1.2deg); }
-    .photo-card.rot-2 { transform: rotate(0.8deg); }
-    .photo-card.rot-3 { transform: rotate(-0.6deg); }
-    .photo-card.rot-4 { transform: rotate(1deg); }
+    .photo-card.rot-1 { transform: rotate(-1.5deg); }
+    .photo-card.rot-2 { transform: rotate(1deg); }
+    .photo-card.rot-3 { transform: rotate(-0.7deg); }
+    .photo-card.rot-4 { transform: rotate(1.2deg); }
 
     .photo-card img {
-      width: 100%;
-      display: block;
+      width: 100%; display: block;
       aspect-ratio: 5 / 6.5;
       object-fit: cover;
+      filter: blur(8px) saturate(0.5);
+      transform: scale(1.08);
+      transition: filter 1200ms cubic-bezier(0.22, 1, 0.36, 1) 200ms,
+                  transform 1200ms cubic-bezier(0.22, 1, 0.36, 1) 200ms;
+    }
+    .in-view .photo-card img {
+      filter: blur(0px) saturate(1);
+      transform: scale(1);
     }
 
     .photo-fallback {
       display: none;
       aspect-ratio: 5 / 6.5;
-      align-items: center;
-      justify-content: center;
+      align-items: center; justify-content: center;
       font-family: var(--font-display);
-      font-size: 18px;
-      color: var(--ink);
-      opacity: 0.6;
+      font-size: 18px; color: var(--ink); opacity: 0.5;
     }
-    .photo-card img.broken + .photo-fallback {
-      display: flex;
-    }
+    .photo-card img.broken + .photo-fallback { display: flex; }
 
-    /* ============ GARDEN MARKER ============ */
+    /* Glow behind photo */
+    .photo-glow {
+      position: absolute;
+      width: 120%; height: 120%;
+      top: -10%; left: -10%;
+      border-radius: 50%;
+      filter: blur(50px);
+      opacity: 0;
+      transition: opacity 1200ms ease 400ms;
+      z-index: -1;
+      pointer-events: none;
+    }
+    .in-view .photo-glow { opacity: 0.35; }
+    .glow-blush { background: radial-gradient(circle, var(--blush), transparent 70%); }
+    .glow-peach { background: radial-gradient(circle, var(--peach), transparent 70%); }
+    .glow-lavender { background: radial-gradient(circle, var(--lavender), transparent 70%); }
+    .glow-butter { background: radial-gradient(circle, var(--butter), transparent 70%); }
+
+    /* ═══ GARDEN MARKER ═══ */
     .garden-marker {
       display: inline-block;
       background: linear-gradient(180deg, #f5e6d3, #e8d5c0);
@@ -244,320 +268,316 @@
       font-size: 17px;
       font-weight: 500;
       letter-spacing: 0.06em;
-      padding: 6px 22px;
+      padding: 7px 24px;
       border-radius: 4px 4px 14px 14px;
-      box-shadow: 0 3px 8px rgba(91,70,54,0.12);
+      box-shadow: 0 3px 10px rgba(91,70,54,0.13);
       position: relative;
       margin-bottom: 24px;
     }
     .garden-marker::before {
       content: '';
-      position: absolute;
-      top: -10px;
-      left: 50%;
+      position: absolute; top: -11px; left: 50%;
       transform: translateX(-50%);
-      width: 3px;
-      height: 12px;
+      width: 3px; height: 13px;
       background: #c4a882;
       border-radius: 2px;
     }
 
-    /* ============ VINE CONNECTOR ============ */
-    .vine-connector {
-      display: flex;
-      justify-content: center;
-      padding: 0;
-      overflow: visible;
-    }
-    .vine-connector svg {
-      width: 60px;
-      height: 140px;
-      overflow: visible;
-    }
-    .vine-path {
-      stroke-dasharray: var(--vine-len, 250);
-      stroke-dashoffset: var(--vine-len, 250);
-      transition: stroke-dashoffset 1000ms cubic-bezier(0.22, 1, 0.36, 1) 200ms;
-    }
-    .in-view .vine-path { stroke-dashoffset: 0; }
-
-    .vine-leaf-accent {
-      transform-origin: center;
-      transform: scale(0);
-      transition: transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1) 900ms;
-    }
-    .in-view .vine-leaf-accent { transform: scale(1); }
-
-    /* ============ SVG BLOOM ============ */
-    .bloom-svg {
-      width: 120px;
-      height: 120px;
-      margin-bottom: 16px;
-    }
-    .bloom-petal, .bloom-center {
-      transform-origin: center;
-      transform: scale(0);
-      transition: transform 800ms cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    .in-view .bloom-petal { transform: scale(1); }
-    .in-view .bloom-center { transform: scale(1); transition-delay: 400ms; }
-    .in-view .bloom-petal:nth-child(2) { transition-delay: 80ms; }
-    .in-view .bloom-petal:nth-child(3) { transition-delay: 160ms; }
-    .in-view .bloom-petal:nth-child(4) { transition-delay: 240ms; }
-    .in-view .bloom-petal:nth-child(5) { transition-delay: 320ms; }
-    .in-view .bloom-petal:nth-child(6) { transition-delay: 400ms; }
-
-    .bloom-leaf {
-      transform-origin: center;
+    /* ═══ SVG BLOOMS ═══ */
+    .bloom-svg { width: 130px; height: 130px; margin-bottom: 16px; }
+    .bloom-petal {
+      transform-origin: 50% 50%;
       transform: scale(0) rotate(-15deg);
-      transition: transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1) 500ms;
+      transition: transform 900ms cubic-bezier(0.34, 1.56, 0.64, 1);
     }
-    .in-view .bloom-leaf { transform: scale(1) rotate(0deg); }
+    .bloom-center {
+      transform-origin: center;
+      transform: scale(0);
+      transition: transform 700ms cubic-bezier(0.34, 1.56, 0.64, 1) 500ms;
+    }
+    .in-view .bloom-petal { transform: scale(1) rotate(0deg); }
+    .in-view .bloom-center { transform: scale(1); }
+    .in-view .bloom-petal:nth-child(2) { transition-delay: 100ms; }
+    .in-view .bloom-petal:nth-child(3) { transition-delay: 200ms; }
+    .in-view .bloom-petal:nth-child(4) { transition-delay: 300ms; }
+    .in-view .bloom-petal:nth-child(5) { transition-delay: 400ms; }
+    .in-view .bloom-petal:nth-child(6) { transition-delay: 500ms; }
+    .bloom-leaf-svg {
+      transform-origin: center;
+      transform: scale(0) rotate(-20deg);
+      transition: transform 700ms cubic-bezier(0.34, 1.56, 0.64, 1) 600ms;
+    }
+    .in-view .bloom-leaf-svg { transform: scale(1) rotate(0deg); }
 
-    /* ============ LEAVES SECTION ============ */
+    /* Breathing pulse on blooms after reveal */
+    @keyframes bloom-breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+    }
+    .in-view .bloom-svg {
+      animation: bloom-breathe 4s ease-in-out infinite 2s;
+    }
+
+    /* ═══ LEAVES SECTION ═══ */
     .leaves-grid {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
-      margin-bottom: 36px;
+      gap: 18px;
+      margin-bottom: 40px;
     }
-
     .leaf-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      display: flex; align-items: center; gap: 12px;
       opacity: 0;
-      transform: scale(0.6) rotate(-12deg);
-      transition: opacity 500ms cubic-bezier(0.22,1,0.36,1),
-                  transform 600ms cubic-bezier(0.34,1.56,0.64,1);
+      transform: scale(0.5) rotate(-15deg);
+      transition: opacity 600ms cubic-bezier(0.22,1,0.36,1),
+                  transform 700ms cubic-bezier(0.34,1.56,0.64,1);
     }
     .in-view .leaf-item { opacity: 1; transform: scale(1) rotate(0deg); }
     .in-view .leaf-item:nth-child(1) { transition-delay: 100ms; }
-    .in-view .leaf-item:nth-child(2) { transition-delay: 250ms; }
-    .in-view .leaf-item:nth-child(3) { transition-delay: 400ms; }
-    .in-view .leaf-item:nth-child(4) { transition-delay: 550ms; }
-    .in-view .leaf-item:nth-child(5) { transition-delay: 700ms; }
-    .in-view .leaf-item:nth-child(6) { transition-delay: 850ms; }
-    .in-view .leaf-item:nth-child(7) { transition-delay: 1000ms; }
-
-    .leaf-svg { width: 36px; height: 28px; flex-shrink: 0; }
-
+    .in-view .leaf-item:nth-child(2) { transition-delay: 280ms; }
+    .in-view .leaf-item:nth-child(3) { transition-delay: 460ms; }
+    .in-view .leaf-item:nth-child(4) { transition-delay: 640ms; }
+    .in-view .leaf-item:nth-child(5) { transition-delay: 820ms; }
+    .in-view .leaf-item:nth-child(6) { transition-delay: 1000ms; }
+    .in-view .leaf-item:nth-child(7) { transition-delay: 1180ms; }
+    .leaf-svg { width: 38px; height: 30px; flex-shrink: 0; }
     .leaf-word {
       font-family: var(--font-display);
-      font-size: 20px;
-      font-style: italic;
-      font-weight: 400;
-      color: var(--leaf);
-      letter-spacing: 0.03em;
+      font-size: 21px; font-style: italic; font-weight: 400;
+      color: var(--leaf); letter-spacing: 0.03em;
     }
 
-    /* ============ BUD ============ */
-    .bud-svg {
-      width: 70px;
-      height: 90px;
-      margin-bottom: 24px;
-    }
-    .bud-petal {
-      transform-origin: 50% 100%;
-      transition: transform 1000ms cubic-bezier(0.22, 1, 0.36, 1);
-    }
-
-    /* ============ LEGACY VINE ============ */
-    .legacy-vine {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0;
-      margin-bottom: 36px;
-    }
-
-    .legacy-node {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    /* ═══ BUD (transition section) ═══ */
+    .bud-svg { width: 80px; height: 100px; margin-bottom: 28px; }
+    .bud-glow {
+      position: absolute;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(244,217,139,0.2), transparent 70%);
+      filter: blur(30px);
       opacity: 0;
-      transform: translateY(16px);
-      transition: opacity 600ms ease, transform 600ms ease;
+      transition: opacity 1500ms ease 600ms;
+      pointer-events: none; z-index: -1;
     }
-    .in-view .legacy-node { opacity: 1; transform: translateY(0); }
-    .in-view .legacy-node:nth-child(1) { transition-delay: 200ms; }
-    .in-view .legacy-node:nth-child(2) { transition-delay: 500ms; }
-    .in-view .legacy-node:nth-child(3) { transition-delay: 800ms; }
-    .in-view .legacy-node:nth-child(4) { transition-delay: 1100ms; }
+    .in-view .bud-glow { opacity: 1; }
 
-    .legacy-bloom { width: 44px; height: 44px; }
+    /* ═══ RORY SECTION ═══ */
+    .rory-section { min-height: 105svh; }
+    .rory-section .photo-card {
+      max-width: 310px;
+      box-shadow: 0 14px 50px rgba(91,70,54,0.18), 0 4px 14px rgba(91,70,54,0.08);
+    }
+    .rory-bloom-wrap {
+      position: relative;
+      display: flex; justify-content: center; align-items: center;
+    }
+    .rory-sparkles {
+      position: absolute; inset: -40px;
+      pointer-events: none;
+    }
+    .rory-sparkle {
+      position: absolute;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 800ms ease;
+    }
+    .in-view .rory-sparkle {
+      animation: sparkle-drift 3s ease-in-out infinite;
+    }
+    @keyframes sparkle-drift {
+      0% { opacity: 0; transform: translateY(0) scale(0.5); }
+      30% { opacity: 0.6; }
+      100% { opacity: 0; transform: translateY(-30px) scale(0); }
+    }
+
+    /* ═══ LEGACY ═══ */
+    .legacy-vine {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 0;
+      margin-bottom: 40px;
+    }
+    .legacy-node {
+      display: flex; flex-direction: column;
+      align-items: center;
+      opacity: 0; transform: translateY(20px) scale(0.9);
+      transition: opacity 700ms ease, transform 700ms ease;
+    }
+    .in-view .legacy-node { opacity: 1; transform: translateY(0) scale(1); }
+    .in-view .legacy-node:nth-child(1) { transition-delay: 200ms; }
+    .in-view .legacy-node:nth-child(2) { transition-delay: 600ms; }
+    .in-view .legacy-node:nth-child(3) { transition-delay: 1000ms; }
+    .in-view .legacy-node:nth-child(4) { transition-delay: 1400ms; }
+    .legacy-bloom { width: 50px; height: 50px; }
     .legacy-name {
       font-family: var(--font-display);
-      font-size: 20px;
-      font-weight: 500;
-      margin-top: 4px;
-      letter-spacing: 0.04em;
+      font-size: 21px; font-weight: 500;
+      margin-top: 4px; letter-spacing: 0.04em;
     }
-
     .legacy-stem {
-      width: 2px;
-      height: 36px;
-      background: var(--leaf);
+      width: 2.5px; height: 40px;
+      background: linear-gradient(180deg, var(--leaf), var(--sage));
       opacity: 0;
-      transition: opacity 500ms ease;
+      transition: opacity 600ms ease;
     }
-    .in-view .legacy-stem { opacity: 0.5; }
-    .in-view .legacy-stem:nth-of-type(2) { transition-delay: 400ms; }
-    .in-view .legacy-stem:nth-of-type(4) { transition-delay: 700ms; }
-    .in-view .legacy-stem:nth-of-type(6) { transition-delay: 1000ms; }
+    .in-view .legacy-stem { opacity: 0.45; }
+    .in-view .legacy-stem:nth-of-type(2) { transition-delay: 500ms; }
+    .in-view .legacy-stem:nth-of-type(4) { transition-delay: 900ms; }
+    .in-view .legacy-stem:nth-of-type(6) { transition-delay: 1300ms; }
 
-    /* ============ CLOSING ============ */
+    /* ═══ CLOSING ═══ */
     .closing-section {
       padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
     }
-
     .closing-title {
       font-family: var(--font-display);
-      font-size: clamp(28px, 7.5vw, 38px);
+      font-size: clamp(28px, 7.5vw, 40px);
       font-weight: 400;
       line-height: 1.35;
       margin-bottom: 28px;
     }
-
     .closing-sig {
       font-family: var(--font-display);
-      font-size: 18px;
-      font-weight: 400;
-      font-style: italic;
-      opacity: 0.75;
+      font-size: 18px; font-weight: 400;
+      font-style: italic; opacity: 0.7;
       margin-top: 24px;
     }
-
     .replay-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 48px;
-      padding: 14px 32px;
-      border: none;
-      border-radius: 50px;
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: 52px;
+      padding: 16px 36px;
+      border: none; border-radius: 50px;
       background: linear-gradient(135deg, var(--sage), var(--leaf));
       color: white;
       font-family: var(--font-display);
-      font-size: 18px;
-      font-weight: 500;
+      font-size: 18px; font-weight: 500;
       letter-spacing: 0.04em;
       cursor: pointer;
-      box-shadow: 0 4px 16px rgba(101,122,87,0.25);
-      transition: transform 200ms ease, box-shadow 200ms ease;
+      box-shadow: 0 6px 20px rgba(101,122,87,0.3);
+      transition: transform 250ms ease, box-shadow 250ms ease;
       -webkit-tap-highlight-color: transparent;
     }
-    .replay-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(101,122,87,0.3);
+    .replay-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(101,122,87,0.35); }
+    .replay-btn:active { transform: scale(0.96); }
+
+    /* ═══ VINE CONNECTORS (between sections) ═══ */
+    .vine-connector {
+      display: flex; justify-content: center;
+      padding: 0; overflow: visible; z-index: 3;
+      position: relative;
     }
-    .replay-btn:active { transform: scale(0.97); }
+    .vine-connector svg { width: 70px; height: 150px; overflow: visible; }
+    .vc-path {
+      stroke-dasharray: var(--vl, 260);
+      stroke-dashoffset: var(--vl, 260);
+      transition: stroke-dashoffset 1100ms cubic-bezier(0.22, 1, 0.36, 1) 100ms;
+    }
+    .in-view .vc-path { stroke-dashoffset: 0; }
+    .vc-leaf {
+      transform-origin: center;
+      transform: scale(0);
+      transition: transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1) 800ms;
+    }
+    .in-view .vc-leaf { transform: scale(1); }
 
-    /* ============ SECTION BACKGROUNDS ============ */
-    .sec-grammie { background: linear-gradient(180deg, var(--ivory) 0%, #FFF5E8 100%); }
-    .sec-leaves { background: linear-gradient(180deg, #faf6ee 0%, #f5f0e5 100%); }
-    .sec-transition { background: linear-gradient(180deg, var(--ivory) 0%, #FFF3E4 100%); }
-    .sec-rory { background: linear-gradient(180deg, #FFF3E4 0%, var(--ivory) 100%); }
-
-    /* ============ RESPONSIVE ============ */
+    /* ═══ RESPONSIVE ═══ */
     @media (min-width: 600px) {
-      .garden {
-        padding: 0 40px;
-      }
-      body {
-        background:
-          linear-gradient(90deg, #f7efe3 0%, var(--ivory) 15%, var(--ivory) 85%, #f7efe3 100%);
-      }
+      .garden-wrap { padding: 0 40px; }
     }
-
     @media (max-width: 380px) {
-      .garden { padding: 0 20px; }
+      .garden-wrap { padding: 0 18px; }
       .photo-card { max-width: 250px; }
     }
 
-    /* ============ REDUCED MOTION ============ */
+    /* ═══ REDUCED MOTION ═══ */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
-        transition-duration: 0.15ms !important;
+        transition-duration: 0.2ms !important;
         transition-delay: 0ms !important;
       }
       .reveal, .leaf-item, .legacy-node { opacity: 1; transform: none; }
-      .vine-path { stroke-dashoffset: 0 !important; }
-      .bloom-petal, .bloom-center, .bloom-leaf { transform: scale(1); }
+      .vc-path { stroke-dashoffset: 0 !important; }
+      .bloom-petal, .bloom-center, .bloom-leaf-svg { transform: scale(1) rotate(0deg); }
       .sprout-stem { stroke-dashoffset: 0; }
       .sprout-leaf, .sprout-leaf-r { transform: scale(1) rotate(0deg); }
-      .vine-leaf-accent { transform: scale(1); }
-      .bud-petal { transform: none; }
-      .legacy-stem { opacity: 0.5; }
+      .vc-leaf { transform: scale(1); }
+      .legacy-stem { opacity: 0.45; }
+      .photo-card img { filter: none; transform: none; }
+      .photo-glow, .bud-glow { opacity: 0.3; }
+      #petals-canvas { display: none; }
+      .vine-layer { display: none; }
+      .parallax-el { display: none; }
       html { scroll-behavior: auto; }
     }
   </style>
 </head>
 <body>
-<main class="garden">
 
-  <!-- ═══════ SECTION 1: HERO ═══════ -->
+<!-- Floating petal canvas -->
+<canvas id="petals-canvas" aria-hidden="true"></canvas>
+
+<div class="garden-wrap">
+  <!-- Full-page vine overlay -->
+  <div class="vine-layer" aria-hidden="true">
+    <svg id="vine-svg" preserveAspectRatio="xMidYMid meet">
+      <path id="vine-main"/>
+    </svg>
+  </div>
+
+  <!-- ═══ SECTION 1: HERO ═══ -->
   <section class="garden-section hero" id="top">
-    <div class="reveal">
-      <h1 class="hero-title">Still Blooming</h1>
-    </div>
-    <div class="reveal d1 subtitle">
-      For Grammie,<br>on Mother's Day.
-    </div>
-    <div class="reveal d3 body-copy" style="margin-top:32px;">
+    <div class="reveal"><h1 class="hero-title">Still Blooming</h1></div>
+    <div class="reveal d1 subtitle">For Grammie,<br>on Mother's Day.</div>
+    <div class="reveal d3 body-copy" style="margin-top:36px;">
       <p>This is a little story about you,</p>
       <p>and the family that kept growing around you.</p>
     </div>
     <div class="sprout-wrap reveal d5">
-      <svg class="sprout-svg" viewBox="0 0 40 80" fill="none">
-        <path class="sprout-stem" d="M20,78 C20,60 20,45 20,30" stroke="var(--leaf)" stroke-width="2.5" stroke-linecap="round"/>
-        <path class="sprout-leaf" d="M20,42 C14,36 8,34 6,28 C10,28 16,32 20,38Z" fill="var(--sage)" opacity="0.8"/>
-        <path class="sprout-leaf-r" d="M20,36 C26,30 32,28 34,22 C30,22 24,26 20,32Z" fill="var(--sage)" opacity="0.65"/>
+      <svg class="sprout-svg" viewBox="0 0 44 90" fill="none">
+        <path class="sprout-stem" d="M22,88 C22,68 22,50 22,32" stroke="var(--leaf)" stroke-width="2.5" stroke-linecap="round"/>
+        <path class="sprout-leaf" d="M22,46 C15,38 7,36 4,28 C9,28 17,34 22,42Z" fill="var(--sage)" opacity="0.8"/>
+        <path class="sprout-leaf-r" d="M22,38 C29,30 37,28 40,20 C35,20 27,26 22,34Z" fill="var(--sage)" opacity="0.6"/>
       </svg>
     </div>
     <div class="scroll-cue reveal d7">
       scroll
-      <svg viewBox="0 0 20 20" fill="none" stroke="var(--sage)" stroke-width="1.5" stroke-linecap="round">
-        <path d="M6,8 L10,12 L14,8"/>
-      </svg>
+      <svg viewBox="0 0 20 20" fill="none" stroke="var(--sage)" stroke-width="1.5" stroke-linecap="round"><path d="M6,8 L10,12 L14,8"/></svg>
     </div>
   </section>
 
   <!-- vine connector -->
   <div class="vine-connector">
-    <svg viewBox="0 0 60 140" fill="none">
-      <path class="vine-path" style="--vine-len:200" d="M30,0 C30,35 48,50 30,75 C12,100 30,120 30,140" stroke="var(--leaf)" stroke-width="2.5" stroke-linecap="round"/>
-      <path class="vine-leaf-accent" d="M32,55 C40,47 48,50 44,60 C40,70 30,65 32,55Z" fill="var(--sage)" opacity="0.55"/>
+    <svg viewBox="0 0 70 150" fill="none">
+      <path class="vc-path" style="--vl:220" d="M35,0 C35,38 52,55 35,80 C18,105 35,130 35,150" stroke="var(--leaf)" stroke-width="2.8" stroke-linecap="round"/>
+      <path class="vc-leaf" d="M37,60 C46,50 55,54 49,65 C43,76 33,70 37,60Z" fill="var(--sage)" opacity="0.5"/>
     </svg>
   </div>
 
-  <!-- ═══════ SECTION 2: GRAMMIE ═══════ -->
-  <section class="garden-section sec-grammie">
-    <!-- Bloom SVG -->
+  <!-- ═══ SECTION 2: GRAMMIE ═══ -->
+  <section class="garden-section">
     <div class="reveal">
-      <svg class="bloom-svg" viewBox="0 0 120 120" fill="none">
-        <ellipse class="bloom-petal" cx="60" cy="32" rx="16" ry="26" fill="var(--blush)" opacity="0.75" transform="rotate(0,60,60)"/>
-        <ellipse class="bloom-petal" cx="60" cy="32" rx="16" ry="26" fill="var(--blush)" opacity="0.65" transform="rotate(72,60,60)"/>
-        <ellipse class="bloom-petal" cx="60" cy="32" rx="16" ry="26" fill="var(--blush)" opacity="0.75" transform="rotate(144,60,60)"/>
-        <ellipse class="bloom-petal" cx="60" cy="32" rx="16" ry="26" fill="var(--blush)" opacity="0.65" transform="rotate(216,60,60)"/>
-        <ellipse class="bloom-petal" cx="60" cy="32" rx="16" ry="26" fill="var(--blush)" opacity="0.75" transform="rotate(288,60,60)"/>
-        <circle class="bloom-center" cx="60" cy="60" r="11" fill="var(--butter)"/>
-        <path class="bloom-leaf" d="M58,88 C50,96 40,100 36,108 C44,106 54,98 58,88Z" fill="var(--sage)" opacity="0.7"/>
-        <path class="bloom-leaf" d="M62,88 C70,96 80,100 84,108 C76,106 66,98 62,88Z" fill="var(--sage)" opacity="0.6"/>
+      <svg class="bloom-svg" viewBox="0 0 130 130" fill="none">
+        <ellipse class="bloom-petal" cx="65" cy="33" rx="18" ry="28" fill="var(--blush)" opacity="0.7" transform="rotate(0,65,65)"/>
+        <ellipse class="bloom-petal" cx="65" cy="33" rx="18" ry="28" fill="var(--blush)" opacity="0.6" transform="rotate(72,65,65)"/>
+        <ellipse class="bloom-petal" cx="65" cy="33" rx="18" ry="28" fill="var(--blush)" opacity="0.7" transform="rotate(144,65,65)"/>
+        <ellipse class="bloom-petal" cx="65" cy="33" rx="18" ry="28" fill="var(--blush)" opacity="0.6" transform="rotate(216,65,65)"/>
+        <ellipse class="bloom-petal" cx="65" cy="33" rx="18" ry="28" fill="var(--blush)" opacity="0.7" transform="rotate(288,65,65)"/>
+        <circle class="bloom-center" cx="65" cy="65" r="12" fill="var(--butter)"/>
+        <path class="bloom-leaf-svg" d="M62,95 C53,104 42,108 38,116 C47,112 58,104 62,95Z" fill="var(--sage)" opacity="0.65"/>
+        <path class="bloom-leaf-svg" d="M68,95 C77,104 88,108 92,116 C83,112 72,104 68,95Z" fill="var(--sage)" opacity="0.55"/>
       </svg>
     </div>
-    <div class="reveal d1">
+    <div class="reveal d1" style="position:relative;">
+      <div class="photo-glow glow-blush"></div>
       <div class="photo-card rot-1">
         <img src="https://images.unsplash.com/photo-1566616213894-2d4e1baee5d8?w=500&h=650&fit=crop&crop=face" alt="Photo of Grammie" loading="lazy" onerror="this.classList.add('broken');this.style.display='none'">
         <div class="photo-fallback">📷 Grammie</div>
       </div>
     </div>
-    <div class="reveal d2">
-      <div class="garden-marker">Grammie</div>
-    </div>
+    <div class="reveal d2"><div class="garden-marker">Grammie</div></div>
     <div class="reveal d3 section-title">You became Mom first.</div>
     <div class="reveal d4 body-copy">
       <p>That was the beginning.</p>
@@ -568,37 +588,35 @@
     </div>
   </section>
 
-  <!-- vine connector -->
   <div class="vine-connector">
-    <svg viewBox="0 0 60 140" fill="none">
-      <path class="vine-path" style="--vine-len:210" d="M30,0 C30,30 16,48 30,75 C44,102 30,120 30,140" stroke="var(--leaf)" stroke-width="2.5" stroke-linecap="round"/>
-      <path class="vine-leaf-accent" d="M27,65 C19,57 12,58 15,68 C18,78 28,75 27,65Z" fill="var(--sage)" opacity="0.5"/>
+    <svg viewBox="0 0 70 150" fill="none">
+      <path class="vc-path" style="--vl:230" d="M35,0 C35,35 18,50 35,80 C52,110 35,130 35,150" stroke="var(--leaf)" stroke-width="2.8" stroke-linecap="round"/>
+      <path class="vc-leaf" d="M32,70 C23,62 15,64 19,74 C23,84 34,80 32,70Z" fill="var(--sage)" opacity="0.45"/>
     </svg>
   </div>
 
-  <!-- ═══════ SECTION 3: CORY ═══════ -->
+  <!-- ═══ SECTION 3: CORY ═══ -->
   <section class="garden-section">
     <div class="reveal">
-      <svg class="bloom-svg" viewBox="0 0 120 120" fill="none">
-        <ellipse class="bloom-petal" cx="60" cy="34" rx="14" ry="24" fill="var(--peach)" opacity="0.8" transform="rotate(0,60,60)"/>
-        <ellipse class="bloom-petal" cx="60" cy="34" rx="14" ry="24" fill="var(--peach)" opacity="0.7" transform="rotate(60,60,60)"/>
-        <ellipse class="bloom-petal" cx="60" cy="34" rx="14" ry="24" fill="var(--peach)" opacity="0.8" transform="rotate(120,60,60)"/>
-        <ellipse class="bloom-petal" cx="60" cy="34" rx="14" ry="24" fill="var(--peach)" opacity="0.7" transform="rotate(180,60,60)"/>
-        <ellipse class="bloom-petal" cx="60" cy="34" rx="14" ry="24" fill="var(--peach)" opacity="0.8" transform="rotate(240,60,60)"/>
-        <ellipse class="bloom-petal" cx="60" cy="34" rx="14" ry="24" fill="var(--peach)" opacity="0.7" transform="rotate(300,60,60)"/>
-        <circle class="bloom-center" cx="60" cy="60" r="10" fill="var(--butter)" opacity="0.9"/>
-        <path class="bloom-leaf" d="M56,86 C48,94 38,96 36,104 C44,100 52,94 56,86Z" fill="var(--sage)" opacity="0.6"/>
+      <svg class="bloom-svg" viewBox="0 0 130 130" fill="none">
+        <ellipse class="bloom-petal" cx="65" cy="36" rx="15" ry="26" fill="var(--peach)" opacity="0.75" transform="rotate(0,65,65)"/>
+        <ellipse class="bloom-petal" cx="65" cy="36" rx="15" ry="26" fill="var(--peach)" opacity="0.65" transform="rotate(60,65,65)"/>
+        <ellipse class="bloom-petal" cx="65" cy="36" rx="15" ry="26" fill="var(--peach)" opacity="0.75" transform="rotate(120,65,65)"/>
+        <ellipse class="bloom-petal" cx="65" cy="36" rx="15" ry="26" fill="var(--peach)" opacity="0.65" transform="rotate(180,65,65)"/>
+        <ellipse class="bloom-petal" cx="65" cy="36" rx="15" ry="26" fill="var(--peach)" opacity="0.75" transform="rotate(240,65,65)"/>
+        <ellipse class="bloom-petal" cx="65" cy="36" rx="15" ry="26" fill="var(--peach)" opacity="0.65" transform="rotate(300,65,65)"/>
+        <circle class="bloom-center" cx="65" cy="65" r="10" fill="var(--butter)" opacity="0.9"/>
+        <path class="bloom-leaf-svg" d="M60,92 C51,100 40,102 38,110 C47,106 56,98 60,92Z" fill="var(--sage)" opacity="0.55"/>
       </svg>
     </div>
-    <div class="reveal d1">
+    <div class="reveal d1" style="position:relative;">
+      <div class="photo-glow glow-peach"></div>
       <div class="photo-card rot-2">
         <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&h=650&fit=crop&crop=face" alt="Photo of Cory" loading="lazy" onerror="this.classList.add('broken');this.style.display='none'">
         <div class="photo-fallback">📷 Cory</div>
       </div>
     </div>
-    <div class="reveal d2">
-      <div class="garden-marker">Cory</div>
-    </div>
+    <div class="reveal d2"><div class="garden-marker">Cory</div></div>
     <div class="reveal d3 section-title">Cory came next.</div>
     <div class="reveal d4 body-copy">
       <p>Your daughter.</p>
@@ -612,66 +630,44 @@
     </div>
   </section>
 
-  <!-- vine connector -->
   <div class="vine-connector">
-    <svg viewBox="0 0 60 140" fill="none">
-      <path class="vine-path" style="--vine-len:190" d="M30,0 C30,40 42,55 30,80 C18,105 30,125 30,140" stroke="var(--leaf)" stroke-width="2.5" stroke-linecap="round"/>
-      <path class="vine-leaf-accent" d="M33,50 C41,44 47,47 42,56 C37,65 29,60 33,50Z" fill="var(--sage)" opacity="0.45"/>
-      <path class="vine-leaf-accent" d="M26,95 C18,89 13,92 17,100 C21,108 28,105 26,95Z" fill="var(--sage)" opacity="0.4"/>
+    <svg viewBox="0 0 70 150" fill="none">
+      <path class="vc-path" style="--vl:210" d="M35,0 C35,42 46,58 35,85 C24,112 35,132 35,150" stroke="var(--leaf)" stroke-width="2.8" stroke-linecap="round"/>
+      <path class="vc-leaf" d="M38,52 C47,45 54,48 48,58 C42,68 34,62 38,52Z" fill="var(--sage)" opacity="0.4"/>
+      <path class="vc-leaf" d="M30,100 C22,93 16,96 20,105 C24,114 32,110 30,100Z" fill="var(--sage)" opacity="0.35"/>
     </svg>
   </div>
 
-  <!-- ═══════ SECTION 4: WHAT GREW QUIETLY ═══════ -->
-  <section class="garden-section sec-leaves">
-    <div class="reveal section-title" style="margin-bottom:32px;">Families grow in all kinds of ways.</div>
+  <!-- ═══ SECTION 4: FAMILIES GROW ═══ -->
+  <section class="garden-section">
+    <div class="reveal section-title" style="margin-bottom:36px;">Families grow in all kinds of ways.</div>
     <div class="leaves-grid">
       <div class="leaf-item">
-        <svg class="leaf-svg" viewBox="0 0 36 28" fill="none">
-          <path d="M4,20 C4,8 18,2 32,4 C30,14 20,24 4,20Z" fill="var(--sage)" opacity="0.7"/>
-          <path d="M4,20 C14,14 24,10 32,4" stroke="var(--leaf)" stroke-width="0.8" opacity="0.5"/>
-        </svg>
+        <svg class="leaf-svg" viewBox="0 0 38 30" fill="none"><path d="M4,22 C4,8 19,2 34,4 C32,15 21,25 4,22Z" fill="var(--sage)" opacity="0.7"/><path d="M4,22 C15,15 25,10 34,4" stroke="var(--leaf)" stroke-width="0.8" opacity="0.5"/></svg>
         <span class="leaf-word">Years</span>
       </div>
       <div class="leaf-item">
-        <svg class="leaf-svg" viewBox="0 0 36 28" fill="none">
-          <path d="M32,20 C32,8 18,2 4,4 C6,14 16,24 32,20Z" fill="var(--sage)" opacity="0.65"/>
-          <path d="M32,20 C22,14 12,10 4,4" stroke="var(--leaf)" stroke-width="0.8" opacity="0.5"/>
-        </svg>
+        <svg class="leaf-svg" viewBox="0 0 38 30" fill="none"><path d="M34,22 C34,8 19,2 4,4 C6,15 17,25 34,22Z" fill="var(--sage)" opacity="0.65"/><path d="M34,22 C23,15 13,10 4,4" stroke="var(--leaf)" stroke-width="0.8" opacity="0.5"/></svg>
         <span class="leaf-word">Stories</span>
       </div>
       <div class="leaf-item">
-        <svg class="leaf-svg" viewBox="0 0 36 28" fill="none">
-          <path d="M4,20 C4,8 18,2 32,4 C30,14 20,24 4,20Z" fill="var(--sage)" opacity="0.7"/>
-          <path d="M4,20 C14,14 24,10 32,4" stroke="var(--leaf)" stroke-width="0.8" opacity="0.5"/>
-        </svg>
+        <svg class="leaf-svg" viewBox="0 0 38 30" fill="none"><path d="M4,22 C4,8 19,2 34,4 C32,15 21,25 4,22Z" fill="var(--sage)" opacity="0.7"/><path d="M4,22 C15,15 25,10 34,4" stroke="var(--leaf)" stroke-width="0.8" opacity="0.5"/></svg>
         <span class="leaf-word">Shared history</span>
       </div>
       <div class="leaf-item">
-        <svg class="leaf-svg" viewBox="0 0 36 28" fill="none">
-          <path d="M32,20 C32,8 18,2 4,4 C6,14 16,24 32,20Z" fill="var(--sage)" opacity="0.6"/>
-          <path d="M32,20 C22,14 12,10 4,4" stroke="var(--leaf)" stroke-width="0.8" opacity="0.5"/>
-        </svg>
+        <svg class="leaf-svg" viewBox="0 0 38 30" fill="none"><path d="M34,22 C34,8 19,2 4,4 C6,15 17,25 34,22Z" fill="var(--sage)" opacity="0.6"/><path d="M34,22 C23,15 13,10 4,4" stroke="var(--leaf)" stroke-width="0.8" opacity="0.5"/></svg>
         <span class="leaf-word">New people</span>
       </div>
       <div class="leaf-item">
-        <svg class="leaf-svg" viewBox="0 0 36 28" fill="none">
-          <path d="M4,20 C4,8 18,2 32,4 C30,14 20,24 4,20Z" fill="var(--sage)" opacity="0.7"/>
-          <path d="M4,20 C14,14 24,10 32,4" stroke="var(--leaf)" stroke-width="0.8" opacity="0.5"/>
-        </svg>
+        <svg class="leaf-svg" viewBox="0 0 38 30" fill="none"><path d="M4,22 C4,8 19,2 34,4 C32,15 21,25 4,22Z" fill="var(--sage)" opacity="0.7"/><path d="M4,22 C15,15 25,10 34,4" stroke="var(--leaf)" stroke-width="0.8" opacity="0.5"/></svg>
         <span class="leaf-word">New chapters</span>
       </div>
       <div class="leaf-item">
-        <svg class="leaf-svg" viewBox="0 0 36 28" fill="none">
-          <path d="M32,20 C32,8 18,2 4,4 C6,14 16,24 32,20Z" fill="var(--sage)" opacity="0.65"/>
-          <path d="M32,20 C22,14 12,10 4,4" stroke="var(--leaf)" stroke-width="0.8" opacity="0.5"/>
-        </svg>
+        <svg class="leaf-svg" viewBox="0 0 38 30" fill="none"><path d="M34,22 C34,8 19,2 4,4 C6,15 17,25 34,22Z" fill="var(--sage)" opacity="0.65"/><path d="M34,22 C23,15 13,10 4,4" stroke="var(--leaf)" stroke-width="0.8" opacity="0.5"/></svg>
         <span class="leaf-word">Choosing each other</span>
       </div>
       <div class="leaf-item">
-        <svg class="leaf-svg" viewBox="0 0 36 28" fill="none">
-          <path d="M4,20 C4,8 18,2 32,4 C30,14 20,24 4,20Z" fill="var(--sage)" opacity="0.7"/>
-          <path d="M4,20 C14,14 24,10 32,4" stroke="var(--leaf)" stroke-width="0.8" opacity="0.5"/>
-        </svg>
+        <svg class="leaf-svg" viewBox="0 0 38 30" fill="none"><path d="M4,22 C4,8 19,2 34,4 C32,15 21,25 4,22Z" fill="var(--sage)" opacity="0.7"/><path d="M4,22 C15,15 25,10 34,4" stroke="var(--leaf)" stroke-width="0.8" opacity="0.5"/></svg>
         <span class="leaf-word">Growing together</span>
       </div>
     </div>
@@ -682,37 +678,35 @@
     </div>
   </section>
 
-  <!-- vine connector -->
   <div class="vine-connector">
-    <svg viewBox="0 0 60 140" fill="none">
-      <path class="vine-path" style="--vine-len:195" d="M30,0 C30,32 20,52 30,78 C40,104 30,122 30,140" stroke="var(--leaf)" stroke-width="2.5" stroke-linecap="round"/>
-      <path class="vine-leaf-accent" d="M28,70 C20,62 14,64 18,74 C22,84 30,80 28,70Z" fill="var(--sage)" opacity="0.5"/>
+    <svg viewBox="0 0 70 150" fill="none">
+      <path class="vc-path" style="--vl:200" d="M35,0 C35,36 24,54 35,82 C46,110 35,130 35,150" stroke="var(--leaf)" stroke-width="2.8" stroke-linecap="round"/>
+      <path class="vc-leaf" d="M33,75 C24,67 17,69 21,79 C25,89 35,85 33,75Z" fill="var(--sage)" opacity="0.45"/>
     </svg>
   </div>
 
-  <!-- ═══════ SECTION 5: BRAEDEN ═══════ -->
+  <!-- ═══ SECTION 5: BRAEDEN ═══ -->
   <section class="garden-section">
     <div class="reveal">
-      <svg class="bloom-svg" viewBox="0 0 120 120" fill="none" style="width:100px;height:100px;">
-        <ellipse class="bloom-petal" cx="60" cy="36" rx="13" ry="22" fill="var(--lavender)" opacity="0.6" transform="rotate(0,60,60)"/>
-        <ellipse class="bloom-petal" cx="60" cy="36" rx="13" ry="22" fill="var(--lavender)" opacity="0.5" transform="rotate(72,60,60)"/>
-        <ellipse class="bloom-petal" cx="60" cy="36" rx="13" ry="22" fill="var(--lavender)" opacity="0.6" transform="rotate(144,60,60)"/>
-        <ellipse class="bloom-petal" cx="60" cy="36" rx="13" ry="22" fill="var(--lavender)" opacity="0.5" transform="rotate(216,60,60)"/>
-        <ellipse class="bloom-petal" cx="60" cy="36" rx="13" ry="22" fill="var(--lavender)" opacity="0.6" transform="rotate(288,60,60)"/>
-        <circle class="bloom-center" cx="60" cy="60" r="9" fill="var(--butter)" opacity="0.85"/>
-        <path class="bloom-leaf" d="M54,86 C46,92 38,92 36,100 C44,96 52,92 54,86Z" fill="var(--sage)" opacity="0.6"/>
-        <path class="bloom-leaf" d="M66,86 C74,92 82,92 84,100 C76,96 68,92 66,86Z" fill="var(--sage)" opacity="0.5"/>
+      <svg class="bloom-svg" viewBox="0 0 130 130" fill="none" style="width:110px;height:110px;">
+        <ellipse class="bloom-petal" cx="65" cy="38" rx="14" ry="24" fill="var(--lavender)" opacity="0.6" transform="rotate(0,65,65)"/>
+        <ellipse class="bloom-petal" cx="65" cy="38" rx="14" ry="24" fill="var(--lavender)" opacity="0.5" transform="rotate(72,65,65)"/>
+        <ellipse class="bloom-petal" cx="65" cy="38" rx="14" ry="24" fill="var(--lavender)" opacity="0.6" transform="rotate(144,65,65)"/>
+        <ellipse class="bloom-petal" cx="65" cy="38" rx="14" ry="24" fill="var(--lavender)" opacity="0.5" transform="rotate(216,65,65)"/>
+        <ellipse class="bloom-petal" cx="65" cy="38" rx="14" ry="24" fill="var(--lavender)" opacity="0.6" transform="rotate(288,65,65)"/>
+        <circle class="bloom-center" cx="65" cy="65" r="10" fill="var(--butter)" opacity="0.8"/>
+        <path class="bloom-leaf-svg" d="M58,92 C49,98 40,98 38,106 C47,102 56,96 58,92Z" fill="var(--sage)" opacity="0.55"/>
+        <path class="bloom-leaf-svg" d="M72,92 C81,98 90,98 92,106 C83,102 74,96 72,92Z" fill="var(--sage)" opacity="0.45"/>
       </svg>
     </div>
-    <div class="reveal d1">
+    <div class="reveal d1" style="position:relative;">
+      <div class="photo-glow glow-lavender"></div>
       <div class="photo-card rot-3">
         <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=650&fit=crop&crop=face" alt="Photo of Braeden" loading="lazy" onerror="this.classList.add('broken');this.style.display='none'">
         <div class="photo-fallback">📷 Braeden</div>
       </div>
     </div>
-    <div class="reveal d2">
-      <div class="garden-marker">Braeden</div>
-    </div>
+    <div class="reveal d2"><div class="garden-marker">Braeden</div></div>
     <div class="reveal d3 section-title">And I got to have you as Grammie.</div>
     <div class="reveal d4 body-copy">
       <p>And I'm really grateful for that.</p>
@@ -727,28 +721,24 @@
     </div>
   </section>
 
-  <!-- vine connector -->
   <div class="vine-connector">
-    <svg viewBox="0 0 60 140" fill="none">
-      <path class="vine-path" style="--vine-len:185" d="M30,0 C30,38 40,55 30,80 C20,105 30,125 30,140" stroke="var(--leaf)" stroke-width="2.5" stroke-linecap="round"/>
+    <svg viewBox="0 0 70 150" fill="none">
+      <path class="vc-path" style="--vl:195" d="M35,0 C35,40 44,58 35,84 C26,110 35,130 35,150" stroke="var(--leaf)" stroke-width="2.8" stroke-linecap="round"/>
     </svg>
   </div>
 
-  <!-- ═══════ SECTION 6: TRANSITION ═══════ -->
-  <section class="garden-section sec-transition" style="min-height:75svh;">
-    <div class="reveal">
-      <svg class="bud-svg" viewBox="0 0 70 90" fill="none">
-        <!-- Stem -->
-        <path d="M35,88 C35,70 35,60 35,50" stroke="var(--leaf)" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- Closed bud petals -->
-        <ellipse class="bud-petal" cx="35" cy="36" rx="8" ry="18" fill="var(--sage)" opacity="0.7"/>
-        <ellipse class="bud-petal" cx="30" cy="38" rx="7" ry="16" fill="var(--sage)" opacity="0.6" transform="rotate(-12,30,38)"/>
-        <ellipse class="bud-petal" cx="40" cy="38" rx="7" ry="16" fill="var(--sage)" opacity="0.6" transform="rotate(12,40,38)"/>
-        <!-- Tiny color hint -->
-        <ellipse cx="35" cy="28" rx="4" ry="6" fill="var(--blush)" opacity="0.3"/>
-        <!-- Small leaves at base -->
-        <path d="M33,55 C27,50 22,50 22,46 C26,48 30,50 33,54Z" fill="var(--sage)" opacity="0.5"/>
-        <path d="M37,55 C43,50 48,50 48,46 C44,48 40,50 37,54Z" fill="var(--sage)" opacity="0.45"/>
+  <!-- ═══ SECTION 6: TRANSITION ═══ -->
+  <section class="garden-section" style="min-height:78svh;">
+    <div class="reveal" style="position:relative;display:flex;justify-content:center;">
+      <div class="bud-glow"></div>
+      <svg class="bud-svg" viewBox="0 0 80 100" fill="none">
+        <path d="M40,98 C40,78 40,66 40,54" stroke="var(--leaf)" stroke-width="2.5" stroke-linecap="round"/>
+        <ellipse cx="40" cy="38" rx="9" ry="20" fill="var(--sage)" opacity="0.7"/>
+        <ellipse cx="34" cy="40" rx="8" ry="18" fill="var(--sage)" opacity="0.6" transform="rotate(-14,34,40)"/>
+        <ellipse cx="46" cy="40" rx="8" ry="18" fill="var(--sage)" opacity="0.6" transform="rotate(14,46,40)"/>
+        <ellipse cx="40" cy="28" rx="5" ry="7" fill="var(--blush)" opacity="0.3"/>
+        <path d="M37,60 C30,54 24,54 24,48 C29,50 34,54 37,58Z" fill="var(--sage)" opacity="0.45"/>
+        <path d="M43,60 C50,54 56,54 56,48 C51,50 46,54 43,58Z" fill="var(--sage)" opacity="0.4"/>
       </svg>
     </div>
     <div class="reveal d2 body-copy" style="max-width:300px;">
@@ -761,48 +751,50 @@
     </div>
   </section>
 
-  <!-- vine connector -->
   <div class="vine-connector">
-    <svg viewBox="0 0 60 140" fill="none">
-      <path class="vine-path" style="--vine-len:180" d="M30,0 C30,30 24,50 30,75 C36,100 30,120 30,140" stroke="var(--leaf)" stroke-width="2.5" stroke-linecap="round"/>
-      <path class="vine-leaf-accent" d="M32,60 C38,52 44,54 40,64 C36,74 28,68 32,60Z" fill="var(--sage)" opacity="0.4"/>
-      <circle class="vine-leaf-accent" cx="28" cy="100" r="2" fill="var(--butter)" opacity="0.3"/>
-      <circle class="vine-leaf-accent" cx="34" cy="108" r="1.5" fill="var(--blush)" opacity="0.25"/>
+    <svg viewBox="0 0 70 150" fill="none">
+      <path class="vc-path" style="--vl:190" d="M35,0 C35,32 28,52 35,78 C42,104 35,126 35,150" stroke="var(--leaf)" stroke-width="2.8" stroke-linecap="round"/>
+      <path class="vc-leaf" d="M38,64 C45,56 52,58 47,68 C42,78 34,73 38,64Z" fill="var(--sage)" opacity="0.35"/>
+      <circle class="vc-leaf" cx="32" cy="106" r="2.5" fill="var(--butter)" opacity="0.3"/>
+      <circle class="vc-leaf" cx="40" cy="115" r="2" fill="var(--blush)" opacity="0.25"/>
     </svg>
   </div>
 
-  <!-- ═══════ SECTION 7: RORY REVEAL ═══════ -->
-  <section class="garden-section sec-rory" style="min-height:100svh;">
-    <!-- Opening bloom -->
-    <div class="reveal">
-      <svg class="bloom-svg" viewBox="0 0 120 120" fill="none" style="width:90px;height:90px;">
-        <ellipse class="bloom-petal" cx="60" cy="38" rx="11" ry="20" fill="var(--blush)" opacity="0.65" transform="rotate(0,60,60)"/>
-        <ellipse class="bloom-petal" cx="60" cy="38" rx="11" ry="20" fill="var(--blush)" opacity="0.55" transform="rotate(60,60,60)"/>
-        <ellipse class="bloom-petal" cx="60" cy="38" rx="11" ry="20" fill="var(--blush)" opacity="0.65" transform="rotate(120,60,60)"/>
-        <ellipse class="bloom-petal" cx="60" cy="38" rx="11" ry="20" fill="var(--blush)" opacity="0.55" transform="rotate(180,60,60)"/>
-        <ellipse class="bloom-petal" cx="60" cy="38" rx="11" ry="20" fill="var(--lavender)" opacity="0.4" transform="rotate(240,60,60)"/>
-        <ellipse class="bloom-petal" cx="60" cy="38" rx="11" ry="20" fill="var(--lavender)" opacity="0.4" transform="rotate(300,60,60)"/>
-        <circle class="bloom-center" cx="60" cy="60" r="8" fill="var(--butter)" opacity="0.75"/>
+  <!-- ═══ SECTION 7: RORY ═══ -->
+  <section class="garden-section rory-section">
+    <div class="reveal rory-bloom-wrap">
+      <div class="rory-sparkles" aria-hidden="true">
+        <div class="rory-sparkle" style="top:10%;left:15%;background:var(--blush);animation-delay:0s;"></div>
+        <div class="rory-sparkle" style="top:30%;left:80%;background:var(--lavender);animation-delay:0.6s;"></div>
+        <div class="rory-sparkle" style="top:60%;left:25%;background:var(--butter);animation-delay:1.2s;"></div>
+        <div class="rory-sparkle" style="top:20%;left:65%;background:var(--peach);animation-delay:1.8s;"></div>
+        <div class="rory-sparkle" style="top:70%;left:70%;background:var(--blush);animation-delay:2.4s;"></div>
+      </div>
+      <svg class="bloom-svg" viewBox="0 0 130 130" fill="none" style="width:100px;height:100px;">
+        <ellipse class="bloom-petal" cx="65" cy="40" rx="12" ry="22" fill="var(--blush)" opacity="0.6" transform="rotate(0,65,65)"/>
+        <ellipse class="bloom-petal" cx="65" cy="40" rx="12" ry="22" fill="var(--blush)" opacity="0.5" transform="rotate(60,65,65)"/>
+        <ellipse class="bloom-petal" cx="65" cy="40" rx="12" ry="22" fill="var(--blush)" opacity="0.6" transform="rotate(120,65,65)"/>
+        <ellipse class="bloom-petal" cx="65" cy="40" rx="12" ry="22" fill="var(--blush)" opacity="0.5" transform="rotate(180,65,65)"/>
+        <ellipse class="bloom-petal" cx="65" cy="40" rx="12" ry="22" fill="var(--lavender)" opacity="0.4" transform="rotate(240,65,65)"/>
+        <ellipse class="bloom-petal" cx="65" cy="40" rx="12" ry="22" fill="var(--lavender)" opacity="0.4" transform="rotate(300,65,65)"/>
+        <circle class="bloom-center" cx="65" cy="65" r="8" fill="var(--butter)" opacity="0.7"/>
       </svg>
     </div>
-    <!-- Small petal accents -->
-    <div class="reveal d1" style="margin-bottom:8px;">
-      <svg width="160" height="20" viewBox="0 0 160 20" fill="none" style="opacity:0.3;">
-        <circle cx="30" cy="10" r="3" fill="var(--blush)"/>
-        <circle cx="60" cy="6" r="2" fill="var(--lavender)"/>
-        <circle cx="100" cy="12" r="2.5" fill="var(--peach)"/>
-        <circle cx="130" cy="8" r="2" fill="var(--blush)"/>
+    <div class="reveal d1" style="margin-bottom:10px;">
+      <svg width="180" height="22" viewBox="0 0 180 22" fill="none" style="opacity:0.25;">
+        <circle cx="25" cy="11" r="3.5" fill="var(--blush)"/><circle cx="60" cy="7" r="2.5" fill="var(--lavender)"/>
+        <circle cx="95" cy="14" r="3" fill="var(--peach)"/><circle cx="130" cy="9" r="2" fill="var(--butter)"/>
+        <circle cx="155" cy="13" r="2.5" fill="var(--blush)"/>
       </svg>
     </div>
-    <div class="reveal d2">
-      <div class="photo-card rot-4" style="max-width:300px;">
+    <div class="reveal d2" style="position:relative;">
+      <div class="photo-glow glow-butter"></div>
+      <div class="photo-card rot-4" style="max-width:310px;">
         <img src="https://images.unsplash.com/photo-1519689680058-324335c77eba?w=500&h=650&fit=crop" alt="Photo of Rory" loading="lazy" onerror="this.classList.add('broken');this.style.display='none'">
         <div class="photo-fallback">📷 Rory</div>
       </div>
     </div>
-    <div class="reveal d3">
-      <div class="garden-marker" style="font-size:15px;padding:5px 18px;">Rory</div>
-    </div>
+    <div class="reveal d3"><div class="garden-marker" style="font-size:15px;padding:5px 18px;">Rory</div></div>
     <div class="reveal d4 section-title">And now there's Rory.</div>
     <div class="reveal d5 body-copy">
       <p>A new little person</p>
@@ -813,71 +805,64 @@
     </div>
   </section>
 
-  <!-- vine connector -->
   <div class="vine-connector">
-    <svg viewBox="0 0 60 140" fill="none">
-      <path class="vine-path" style="--vine-len:170" d="M30,0 C30,35 36,55 30,80 C24,105 30,125 30,140" stroke="var(--leaf)" stroke-width="2.5" stroke-linecap="round"/>
+    <svg viewBox="0 0 70 150" fill="none">
+      <path class="vc-path" style="--vl:180" d="M35,0 C35,38 40,58 35,84 C30,110 35,130 35,150" stroke="var(--leaf)" stroke-width="2.8" stroke-linecap="round"/>
     </svg>
   </div>
 
-  <!-- ═══════ SECTION 8: LEGACY ═══════ -->
+  <!-- ═══ SECTION 8: LEGACY ═══ -->
   <section class="garden-section">
     <div class="legacy-vine">
-      <!-- Grammie -->
       <div class="legacy-node">
-        <svg class="legacy-bloom" viewBox="0 0 44 44" fill="none">
-          <ellipse cx="22" cy="14" rx="7" ry="12" fill="var(--blush)" opacity="0.7" transform="rotate(0,22,22)"/>
-          <ellipse cx="22" cy="14" rx="7" ry="12" fill="var(--blush)" opacity="0.6" transform="rotate(72,22,22)"/>
-          <ellipse cx="22" cy="14" rx="7" ry="12" fill="var(--blush)" opacity="0.7" transform="rotate(144,22,22)"/>
-          <ellipse cx="22" cy="14" rx="7" ry="12" fill="var(--blush)" opacity="0.6" transform="rotate(216,22,22)"/>
-          <ellipse cx="22" cy="14" rx="7" ry="12" fill="var(--blush)" opacity="0.7" transform="rotate(288,22,22)"/>
-          <circle cx="22" cy="22" r="5" fill="var(--butter)"/>
+        <svg class="legacy-bloom" viewBox="0 0 50 50" fill="none">
+          <ellipse cx="25" cy="14" rx="8" ry="13" fill="var(--blush)" opacity="0.7" transform="rotate(0,25,25)"/>
+          <ellipse cx="25" cy="14" rx="8" ry="13" fill="var(--blush)" opacity="0.6" transform="rotate(72,25,25)"/>
+          <ellipse cx="25" cy="14" rx="8" ry="13" fill="var(--blush)" opacity="0.7" transform="rotate(144,25,25)"/>
+          <ellipse cx="25" cy="14" rx="8" ry="13" fill="var(--blush)" opacity="0.6" transform="rotate(216,25,25)"/>
+          <ellipse cx="25" cy="14" rx="8" ry="13" fill="var(--blush)" opacity="0.7" transform="rotate(288,25,25)"/>
+          <circle cx="25" cy="25" r="5.5" fill="var(--butter)"/>
         </svg>
         <span class="legacy-name">Grammie</span>
       </div>
       <div class="legacy-stem"></div>
-      <!-- Cory -->
       <div class="legacy-node">
-        <svg class="legacy-bloom" viewBox="0 0 44 44" fill="none">
-          <ellipse cx="22" cy="16" rx="6" ry="10" fill="var(--peach)" opacity="0.75" transform="rotate(0,22,22)"/>
-          <ellipse cx="22" cy="16" rx="6" ry="10" fill="var(--peach)" opacity="0.65" transform="rotate(60,22,22)"/>
-          <ellipse cx="22" cy="16" rx="6" ry="10" fill="var(--peach)" opacity="0.75" transform="rotate(120,22,22)"/>
-          <ellipse cx="22" cy="16" rx="6" ry="10" fill="var(--peach)" opacity="0.65" transform="rotate(180,22,22)"/>
-          <ellipse cx="22" cy="16" rx="6" ry="10" fill="var(--peach)" opacity="0.75" transform="rotate(240,22,22)"/>
-          <ellipse cx="22" cy="16" rx="6" ry="10" fill="var(--peach)" opacity="0.65" transform="rotate(300,22,22)"/>
-          <circle cx="22" cy="22" r="4.5" fill="var(--butter)" opacity="0.85"/>
+        <svg class="legacy-bloom" viewBox="0 0 50 50" fill="none">
+          <ellipse cx="25" cy="17" rx="7" ry="11" fill="var(--peach)" opacity="0.7" transform="rotate(0,25,25)"/>
+          <ellipse cx="25" cy="17" rx="7" ry="11" fill="var(--peach)" opacity="0.6" transform="rotate(60,25,25)"/>
+          <ellipse cx="25" cy="17" rx="7" ry="11" fill="var(--peach)" opacity="0.7" transform="rotate(120,25,25)"/>
+          <ellipse cx="25" cy="17" rx="7" ry="11" fill="var(--peach)" opacity="0.6" transform="rotate(180,25,25)"/>
+          <ellipse cx="25" cy="17" rx="7" ry="11" fill="var(--peach)" opacity="0.7" transform="rotate(240,25,25)"/>
+          <ellipse cx="25" cy="17" rx="7" ry="11" fill="var(--peach)" opacity="0.6" transform="rotate(300,25,25)"/>
+          <circle cx="25" cy="25" r="5" fill="var(--butter)" opacity="0.85"/>
         </svg>
         <span class="legacy-name">Cory</span>
       </div>
       <div class="legacy-stem"></div>
-      <!-- Braeden -->
       <div class="legacy-node">
-        <svg class="legacy-bloom" viewBox="0 0 44 44" fill="none">
-          <ellipse cx="22" cy="16" rx="6" ry="10" fill="var(--lavender)" opacity="0.6" transform="rotate(0,22,22)"/>
-          <ellipse cx="22" cy="16" rx="6" ry="10" fill="var(--lavender)" opacity="0.5" transform="rotate(72,22,22)"/>
-          <ellipse cx="22" cy="16" rx="6" ry="10" fill="var(--lavender)" opacity="0.6" transform="rotate(144,22,22)"/>
-          <ellipse cx="22" cy="16" rx="6" ry="10" fill="var(--lavender)" opacity="0.5" transform="rotate(216,22,22)"/>
-          <ellipse cx="22" cy="16" rx="6" ry="10" fill="var(--lavender)" opacity="0.6" transform="rotate(288,22,22)"/>
-          <circle cx="22" cy="22" r="4" fill="var(--butter)" opacity="0.8"/>
+        <svg class="legacy-bloom" viewBox="0 0 50 50" fill="none">
+          <ellipse cx="25" cy="17" rx="7" ry="11" fill="var(--lavender)" opacity="0.6" transform="rotate(0,25,25)"/>
+          <ellipse cx="25" cy="17" rx="7" ry="11" fill="var(--lavender)" opacity="0.5" transform="rotate(72,25,25)"/>
+          <ellipse cx="25" cy="17" rx="7" ry="11" fill="var(--lavender)" opacity="0.6" transform="rotate(144,25,25)"/>
+          <ellipse cx="25" cy="17" rx="7" ry="11" fill="var(--lavender)" opacity="0.5" transform="rotate(216,25,25)"/>
+          <ellipse cx="25" cy="17" rx="7" ry="11" fill="var(--lavender)" opacity="0.6" transform="rotate(288,25,25)"/>
+          <circle cx="25" cy="25" r="4.5" fill="var(--butter)" opacity="0.75"/>
         </svg>
         <span class="legacy-name">Braeden</span>
       </div>
       <div class="legacy-stem"></div>
-      <!-- Rory -->
       <div class="legacy-node">
-        <svg class="legacy-bloom" viewBox="0 0 44 44" fill="none">
-          <ellipse cx="22" cy="18" rx="5" ry="8" fill="var(--sage)" opacity="0.6" transform="rotate(-15,22,22)"/>
-          <ellipse cx="22" cy="18" rx="5" ry="8" fill="var(--sage)" opacity="0.5" transform="rotate(15,22,22)"/>
-          <ellipse cx="22" cy="16" rx="4" ry="9" fill="var(--sage)" opacity="0.65"/>
-          <circle cx="22" cy="18" r="3" fill="var(--blush)" opacity="0.4"/>
+        <svg class="legacy-bloom" viewBox="0 0 50 50" fill="none">
+          <ellipse cx="25" cy="19" rx="6" ry="9" fill="var(--sage)" opacity="0.6" transform="rotate(-15,25,25)"/>
+          <ellipse cx="25" cy="19" rx="6" ry="9" fill="var(--sage)" opacity="0.5" transform="rotate(15,25,25)"/>
+          <ellipse cx="25" cy="17" rx="5" ry="10" fill="var(--sage)" opacity="0.65"/>
+          <circle cx="25" cy="20" r="3.5" fill="var(--blush)" opacity="0.4"/>
         </svg>
         <span class="legacy-name">Rory</span>
       </div>
     </div>
-    <div class="reveal d1 section-title" style="margin-top:20px;">
-      Mom.<br>
-      Grammie.<br>
-      Great-Grammie.
+    <div class="reveal d1 section-title" style="margin-top:24px;">
+      Mom.<br>Grammie.<br>Great-Grammie.
     </div>
     <div class="reveal d3 body-copy" style="margin-top:12px;">
       <p>Three names.</p>
@@ -887,7 +872,7 @@
     </div>
   </section>
 
-  <!-- ═══════ SECTION 9: CLOSING ═══════ -->
+  <!-- ═══ SECTION 9: CLOSING ═══ -->
   <section class="garden-section closing-section">
     <div class="reveal closing-title">Happy Mother's Day, Grammie.</div>
     <div class="reveal d2 body-copy">
@@ -897,67 +882,241 @@
     </div>
     <div class="reveal d4 closing-sig">— Braeden, Cory, and Rory</div>
     <div class="reveal d6">
-      <button class="replay-btn" onclick="replayScroll()" aria-label="Scroll back to the beginning">
-        ↑ From the beginning
-      </button>
+      <button class="replay-btn" onclick="replayScroll()" aria-label="Scroll back to the beginning">↑ From the beginning</button>
     </div>
   </section>
 
-</main>
+</div><!-- garden-wrap -->
 
 <script>
-  // Intersection Observer for section reveals
+(function() {
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ═══ INTERSECTION OBSERVER ═══
   const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('in-view');
-      }
-    });
-  }, {
-    threshold: 0.12,
-    rootMargin: '0px 0px -8% 0px'
-  });
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in-view'); });
+  }, { threshold: 0.1, rootMargin: '0px 0px -6% 0px' });
 
-  document.querySelectorAll('.garden-section, .vine-connector').forEach(el => {
-    observer.observe(el);
-  });
+  document.querySelectorAll('.garden-section, .vine-connector').forEach(el => observer.observe(el));
 
-  // Hide scroll cue after first scroll
-  let scrolledOnce = false;
+  // ═══ SCROLL CUE ═══
+  let cueHidden = false;
   window.addEventListener('scroll', () => {
-    if (!scrolledOnce && window.scrollY > 60) {
-      scrolledOnce = true;
+    if (!cueHidden && window.scrollY > 80) {
+      cueHidden = true;
       const cue = document.querySelector('.scroll-cue');
       if (cue) cue.classList.add('hidden');
     }
   }, { passive: true });
 
-  // Replay button
-  function replayScroll() {
-    // Remove all in-view classes
-    document.querySelectorAll('.in-view').forEach(el => {
-      el.classList.remove('in-view');
-    });
+  // ═══ BACKGROUND COLOR TRANSITIONS ═══
+  const bgStops = [
+    { pos: 0.00, r: 255, g: 248, b: 239 },
+    { pos: 0.10, r: 255, g: 245, b: 232 },
+    { pos: 0.22, r: 255, g: 244, b: 234 },
+    { pos: 0.35, r: 248, g: 246, b: 238 },
+    { pos: 0.48, r: 250, g: 244, b: 248 },
+    { pos: 0.58, r: 255, g: 246, b: 234 },
+    { pos: 0.72, r: 255, g: 242, b: 228 },
+    { pos: 0.85, r: 255, g: 248, b: 239 },
+    { pos: 1.00, r: 255, g: 248, b: 239 },
+  ];
 
-    // Scroll to top
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    window.scrollTo({
-      top: 0,
-      behavior: prefersReduced ? 'instant' : 'smooth'
-    });
+  function lerpBg(progress) {
+    let i = 0;
+    for (let j = 1; j < bgStops.length; j++) {
+      if (progress <= bgStops[j].pos) { i = j - 1; break; }
+      i = j - 1;
+    }
+    const a = bgStops[i], b = bgStops[Math.min(i + 1, bgStops.length - 1)];
+    const t = a.pos === b.pos ? 0 : (progress - a.pos) / (b.pos - a.pos);
+    const r = Math.round(a.r + (b.r - a.r) * t);
+    const g = Math.round(a.g + (b.g - a.g) * t);
+    const bl = Math.round(a.b + (b.b - a.b) * t);
+    document.body.style.backgroundColor = `rgb(${r},${g},${bl})`;
+  }
 
-    // Re-show scroll cue
-    scrolledOnce = false;
+  // ═══ FLOATING PETAL CANVAS ═══
+  const canvas = document.getElementById('petals-canvas');
+  const ctx = canvas ? canvas.getContext('2d') : null;
+  const petals = [];
+  const PETAL_COUNT = prefersReduced ? 0 : 18;
+  const petalColors = ['#E9B7B1', '#F3C7A5', '#C8B7D9', '#F4D98B', '#A8B99A'];
+
+  function resizeCanvas() {
+    if (!canvas) return;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  function createPetal() {
+    return {
+      x: Math.random() * (canvas ? canvas.width : 400),
+      y: Math.random() * (canvas ? canvas.height : 800) - (canvas ? canvas.height : 800),
+      size: 3 + Math.random() * 7,
+      ratio: 0.4 + Math.random() * 0.3,
+      speedY: 0.2 + Math.random() * 0.6,
+      speedX: -0.15 + Math.random() * 0.3,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: 0.008 + Math.random() * 0.015,
+      rotation: Math.random() * Math.PI * 2,
+      rotSpeed: -0.01 + Math.random() * 0.02,
+      opacity: 0.1 + Math.random() * 0.2,
+      color: petalColors[Math.floor(Math.random() * petalColors.length)],
+    };
+  }
+
+  function initPetals() {
+    if (!canvas || prefersReduced) return;
+    resizeCanvas();
+    for (let i = 0; i < PETAL_COUNT; i++) {
+      const p = createPetal();
+      p.y = Math.random() * canvas.height;
+      petals.push(p);
+    }
+  }
+
+  function drawPetals() {
+    if (!ctx || !canvas) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    petals.forEach(p => {
+      p.y += p.speedY;
+      p.wobble += p.wobbleSpeed;
+      p.x += p.speedX + Math.sin(p.wobble) * 0.4;
+      p.rotation += p.rotSpeed;
+      if (p.y > canvas.height + 30) {
+        p.y = -30;
+        p.x = Math.random() * canvas.width;
+      }
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation);
+      ctx.globalAlpha = p.opacity;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, p.size, p.size * p.ratio, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  // ═══ FULL-PAGE VINE OVERLAY ═══
+  const vineSvg = document.getElementById('vine-svg');
+  const vineMain = document.getElementById('vine-main');
+  let vineLength = 0;
+
+  function setupVine() {
+    if (prefersReduced || !vineSvg || !vineMain) return;
+    const garden = document.querySelector('.garden-wrap');
+    const h = garden.scrollHeight;
+    vineSvg.setAttribute('viewBox', `0 0 120 ${h}`);
+
+    let d = 'M 60 0';
+    const segH = 180;
+    const segs = Math.ceil(h / segH);
+    for (let i = 0; i < segs; i++) {
+      const y0 = i * segH;
+      const y1 = y0 + segH * 0.35;
+      const y2 = y0 + segH * 0.65;
+      const y3 = (i + 1) * segH;
+      const sway = 14 + Math.sin(i * 0.8) * 8;
+      const dir = i % 2 === 0 ? 1 : -1;
+      d += ` C ${60 + dir * sway} ${y1}, ${60 - dir * sway} ${y2}, ${60 + dir * 2} ${Math.min(y3, h)}`;
+    }
+    vineMain.setAttribute('d', d);
+    vineLength = vineMain.getTotalLength();
+    vineMain.style.strokeDasharray = vineLength;
+    vineMain.style.strokeDashoffset = vineLength;
+
+    // Add small leaves along vine
+    const leafInterval = 320;
+    const numLeaves = Math.floor(h / leafInterval);
+    for (let i = 1; i <= numLeaves; i++) {
+      const frac = (i * leafInterval) / vineLength;
+      if (frac > 1) break;
+      try {
+        const pt = vineMain.getPointAtLength(frac * vineLength);
+        const side = i % 2 === 0 ? 1 : -1;
+        const leaf = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const lx = pt.x + side * 10;
+        const ly = pt.y;
+        if (side > 0) {
+          leaf.setAttribute('d', `M${pt.x},${ly} C${lx+6},${ly-7} ${lx+12},${ly-3} ${lx+8},${ly+5} C${lx+4},${ly+10} ${pt.x-1},${ly+5} ${pt.x},${ly}Z`);
+        } else {
+          leaf.setAttribute('d', `M${pt.x},${ly} C${lx-6},${ly-7} ${lx-12},${ly-3} ${lx-8},${ly+5} C${lx-4},${ly+10} ${pt.x+1},${ly+5} ${pt.x},${ly}Z`);
+        }
+        leaf.setAttribute('fill', '#A8B99A');
+        leaf.setAttribute('opacity', '0');
+        leaf.classList.add('vine-leaf-d');
+        leaf.dataset.frac = frac.toString();
+        vineSvg.appendChild(leaf);
+      } catch(e) {}
+    }
+  }
+
+  function updateVine(progress) {
+    if (!vineMain || vineLength === 0) return;
+    const offset = vineLength * (1 - progress);
+    vineMain.style.strokeDashoffset = offset;
+    // Reveal leaves as vine passes them
+    document.querySelectorAll('.vine-leaf-d').forEach(leaf => {
+      const f = parseFloat(leaf.dataset.frac);
+      if (progress >= f - 0.01) {
+        const t = Math.min(1, (progress - f + 0.01) * 40);
+        leaf.style.opacity = (0.4 * t).toString();
+        leaf.style.transform = `scale(${t})`;
+      }
+    });
+  }
+
+  // ═══ RAF LOOP ═══
+  let ticking = false;
+  function onFrame() {
+    const scrollTop = window.scrollY;
+    const docH = document.body.scrollHeight - window.innerHeight;
+    const progress = docH > 0 ? Math.max(0, Math.min(1, scrollTop / docH)) : 0;
+
+    if (!prefersReduced) {
+      lerpBg(progress);
+      updateVine(progress);
+      drawPetals();
+    }
+    ticking = false;
+  }
+
+  function requestTick() {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(onFrame);
+    }
+  }
+
+  window.addEventListener('scroll', requestTick, { passive: true });
+  // Also run on RAF for petals when not scrolling
+  if (!prefersReduced) {
+    (function petalLoop() {
+      if (!ticking) drawPetals();
+      requestAnimationFrame(petalLoop);
+    })();
+  }
+
+  // ═══ INIT ═══
+  window.addEventListener('resize', () => { resizeCanvas(); setupVine(); });
+  initPetals();
+  requestAnimationFrame(() => { setupVine(); onFrame(); });
+
+  // ═══ REPLAY ═══
+  window.replayScroll = function() {
+    document.querySelectorAll('.in-view').forEach(el => el.classList.remove('in-view'));
+    cueHidden = false;
     const cue = document.querySelector('.scroll-cue');
     if (cue) cue.classList.remove('hidden');
-
-    // Re-trigger animations after scroll completes
+    window.scrollTo({ top: 0, behavior: prefersReduced ? 'instant' : 'smooth' });
     setTimeout(() => {
-      document.querySelectorAll('.garden-section, .vine-connector').forEach(el => {
-        observer.observe(el);
-      });
-    }, prefersReduced ? 100 : 1200);
-  }
+      document.querySelectorAll('.garden-section, .vine-connector').forEach(el => observer.observe(el));
+    }, prefersReduced ? 100 : 1400);
+  };
+})();
 </script>
 </body>
 </html>
